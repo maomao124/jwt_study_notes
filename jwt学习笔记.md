@@ -255,3 +255,981 @@ jjwt的maven坐标：
 
 ## jwt入门案例
 
+
+
+### 第一步：创建maven工程jwt_demo并配置pom.xml文件
+
+
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <!--
+      -maven项目核心配置文件-
+    Project name(项目名称)：jwt_demo
+    Author(作者）: mao
+    Author QQ：1296193245
+    GitHub：https://github.com/maomao124/
+    Date(创建日期)： 2022/11/2
+    Time(创建时间)： 13:36
+    -->
+    <groupId>mao</groupId>
+    <artifactId>jwt_demo</artifactId>
+
+    <version>1.0-SNAPSHOT</version>
+    <description>使用jjwt来解析和生成token</description>
+
+    <properties>
+
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <!--jwt 依赖-->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <!-- 测试框架 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.0</version>
+        </dependency>
+
+        <!--java 8 版本不需要添加-->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+    </dependencies>
+
+</project>
+```
+
+
+
+
+
+
+
+
+
+### 第二步：编写单元测试
+
+
+
+
+
+```java
+/**
+ * 生成token，不使用签名
+ */
+@Test
+void test1()
+{
+    Map<String, Object> head = new HashMap<>();
+    head.put("alg", "none");
+    head.put("typ", "JWT");
+
+    Map<String, Object> body = new HashMap<>();
+    body.put("userId", "10001");
+    body.put("username", "张三");
+    body.put("sex", "男");
+
+    String token = Jwts.builder()
+            .setHeader(head)
+            .setClaims(body)
+            .setId("jwt1")
+            .compact();
+    System.out.println(token);
+    //eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMSIsImp0aSI6Imp3dDEiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9.
+}
+```
+
+
+
+
+
+![image-20221102201655194](img/jwt学习笔记/image-20221102201655194.png)
+
+
+
+
+
+
+
+```java
+/**
+ * 解析token，不使用签名
+ */
+@Test
+void test2()
+{
+    Jwt jwt = Jwts.parser().parse("eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0." +
+            "eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMSIsImp0aSI6Imp3dDEiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9.");
+    Header header = jwt.getHeader();
+    Object body = jwt.getBody();
+    System.out.println(jwt);
+    System.out.println(header);
+    System.out.println(body);
+}
+```
+
+
+
+
+
+![image-20221102201720015](img/jwt学习笔记/image-20221102201720015.png)
+
+
+
+
+
+
+
+```java
+/**
+ * 生成token，使用hs256签名算法
+ */
+@Test
+void test3()
+{
+    Map<String, Object> head = new HashMap<>();
+    head.put("alg", SignatureAlgorithm.HS256.getValue());
+    head.put("typ", "JWT");
+
+    Map<String, Object> body = new HashMap<>();
+    body.put("userId", "10002");
+    body.put("username", "张三");
+    body.put("sex", "男");
+
+    String token = Jwts.builder()
+            .setHeader(head)
+            .setClaims(body)
+            .setId("jwt2")
+            .signWith(SignatureAlgorithm.HS256, "123456")
+            .compact();
+    System.out.println(token);
+    //eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9
+    // .eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMiIsImp0aSI6Imp3dDIiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9
+    // .9TC0U77uYueqnUdU_we2yVUZ6uj9mrsLPhjr4gB2v98
+}
+```
+
+
+
+
+
+![image-20221102202410308](img/jwt学习笔记/image-20221102202410308.png)
+
+
+
+
+
+
+
+```java
+/**
+ * 解析token，使用hs256签名算法，不设置SigningKey的情况
+ */
+@Test
+void test4()
+{
+    String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+            ".eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMiIsImp0aSI6Imp3dDIiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9." +
+            "9TC0U77uYueqnUdU_we2yVUZ6uj9mrsLPhjr4gB2v98";
+
+    Jwt jwt = Jwts.parser()
+            .parse(token);
+    Header header = jwt.getHeader();
+    Object body = jwt.getBody();
+    System.out.println(jwt);
+    System.out.println(header);
+    System.out.println(body);
+}
+```
+
+
+
+
+
+![image-20221102203047618](img/jwt学习笔记/image-20221102203047618.png)
+
+
+
+
+
+
+
+```java
+/**
+ * 解析token，使用hs256签名算法，SigningKey错误的情况
+ */
+@Test
+void test5()
+{
+    String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+            ".eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMiIsImp0aSI6Imp3dDIiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9." +
+            "9TC0U77uYueqnUdU_we2yVUZ6uj9mrsLPhjr4gB2v98";
+
+    Jwt jwt = Jwts.parser()
+            .setSigningKey("1236")
+            .parse(token);
+    Header header = jwt.getHeader();
+    Object body = jwt.getBody();
+    System.out.println(jwt);
+    System.out.println(header);
+    System.out.println(body);
+}
+```
+
+
+
+
+
+![image-20221102203218770](img/jwt学习笔记/image-20221102203218770.png)
+
+
+
+
+
+
+
+```java
+/**
+ * 解析token，使用hs256签名算法，SigningKey正确的情况
+ */
+@Test
+void test6()
+{
+    String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+            ".eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMiIsImp0aSI6Imp3dDIiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9." +
+            "9TC0U77uYueqnUdU_we2yVUZ6uj9mrsLPhjr4gB2v98";
+
+    Jwt jwt = Jwts.parser()
+            .setSigningKey("123456")
+            .parse(token);
+    Header header = jwt.getHeader();
+    Object body = jwt.getBody();
+    System.out.println(jwt);
+    System.out.println(header);
+    System.out.println(body);
+}
+```
+
+
+
+
+
+![image-20221102203300576](img/jwt学习笔记/image-20221102203300576.png)
+
+
+
+
+
+
+
+```java
+/**
+ * 生成jwt令牌，基于RS256签名算法，错误
+ */
+@Test
+void test7()
+{
+    Map<String, Object> head = new HashMap<>();
+    head.put("alg", SignatureAlgorithm.RS256.getValue());
+    head.put("typ", "JWT");
+
+    Map<String, Object> body = new HashMap<>();
+    body.put("userId", "10003");
+    body.put("username", "张三");
+    body.put("sex", "男");
+
+    String token = Jwts.builder()
+            .setHeader(head)
+            .setClaims(body)
+            .setId("jwt3")
+            .signWith(SignatureAlgorithm.RS256, "123456")
+            .compact();
+    System.out.println(token);
+}
+```
+
+
+
+![image-20221102203810652](img/jwt学习笔记/image-20221102203810652.png)
+
+
+
+
+
+
+
+需要先生成秘钥/公钥 对
+
+
+
+```java
+/**
+ * 生成自己的 秘钥/公钥 对
+ *
+ * @throws Exception 异常
+ */
+@Test
+public void test8() throws Exception
+{
+    //自定义 随机密码,  请修改这里
+    String password = "123456";
+
+    KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+    SecureRandom secureRandom = new SecureRandom(password.getBytes());
+    keyPairGenerator.initialize(1024, secureRandom);
+    KeyPair keyPair = keyPairGenerator.genKeyPair();
+
+    byte[] publicKeyBytes = keyPair.getPublic().getEncoded();
+    byte[] privateKeyBytes = keyPair.getPrivate().getEncoded();
+
+    FileUtil.writeBytes(publicKeyBytes, "./pub.key");
+    FileUtil.writeBytes(privateKeyBytes, "./pri.key");
+}
+```
+
+
+
+
+
+
+
+```java
+    //获取私钥
+    public PrivateKey getPriKey() throws Exception
+    {
+//        InputStream inputStream =
+//                this.getClass().getClassLoader().getResourceAsStream("pri.key");
+        FileInputStream inputStream = new FileInputStream("./pri.key");
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
+        byte[] keyBytes = new byte[inputStream.available()];
+        dataInputStream.readFully(keyBytes);
+        PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(pkcs8EncodedKeySpec);
+    }
+
+    //获取公钥
+    public PublicKey getPubKey() throws Exception
+    {
+//        InputStream inputStream =
+//                this.getClass().getClassLoader().getResourceAsStream("pub.key");
+        FileInputStream inputStream = new FileInputStream("./pub.key");
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
+        byte[] keyBytes = new byte[inputStream.available()];
+        dataInputStream.readFully(keyBytes);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(spec);
+    }
+
+    /**
+     * 生成jwt令牌，基于RS256签名算法
+     */
+    @Test
+    void test9() throws Exception
+    {
+        Map<String, Object> head = new HashMap<>();
+        head.put("alg", SignatureAlgorithm.RS256.getValue());
+        head.put("typ", "JWT");
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("userId", "10003");
+        body.put("username", "张三");
+        body.put("sex", "男");
+
+        String token = Jwts.builder()
+                .setHeader(head)
+                .setClaims(body)
+                .setId("jwt3")
+                .signWith(SignatureAlgorithm.RS256, getPriKey())
+                .compact();
+        System.out.println(token);
+        //eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMyIsImp0aSI6Imp3dDMiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9.Ke2o0WFNNQp71Sdd056bP2Z2CywxfaV4M9OUtsPNBmrLWSLNOkqUao3DiTdX2kLMMWjVQ4THnCQHRiJhXa2uPX6qLfNPHhCC1unYFBlU17WAPSfpp3BeEF4UK3G5GOiamLFghiowlwG84_3AuNFOj8JZXY4Beq_FpT9PSo1608M
+    }
+```
+
+
+
+
+
+
+
+![image-20221102204938691](img/jwt学习笔记/image-20221102204938691.png)
+
+
+
+
+
+
+
+```java
+/**
+ * 解析jwt令牌，基于RS256签名算法
+ */
+@Test
+void test10() throws Exception
+{
+    String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
+            ".eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMyIsImp0aSI6Imp3dDMiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9" +
+            ".Ke2o0WFNNQp71Sdd056bP2Z2CywxfaV4M9OUtsPNBmrLWSLNOkqUao3DiTdX2kLMMWjVQ4" +
+            "THnCQHRiJhXa2uPX6qLfNPHhCC1unYFBlU17WAPSfpp3BeEF4UK3G5GOiamLFghiowlwG84_3AuNFOj8JZXY4Beq_FpT9PSo1608M";
+
+    Jwt jwt = Jwts.parser()
+            .setSigningKey(getPubKey())
+            .parse(token);
+    Header header = jwt.getHeader();
+    Object body = jwt.getBody();
+    System.out.println(jwt);
+    System.out.println(header);
+    System.out.println(body);
+}
+```
+
+
+
+
+
+![image-20221102205357079](img/jwt学习笔记/image-20221102205357079.png)
+
+
+
+
+
+
+
+```java
+/**
+ * 生成jwt令牌，基于RS256签名算法，带过期时间，解析过期的情况
+ */
+@Test
+void test11() throws Exception
+{
+    Map<String, Object> head = new HashMap<>();
+    head.put("alg", SignatureAlgorithm.RS256.getValue());
+    head.put("typ", "JWT");
+
+    Map<String, Object> body = new HashMap<>();
+    body.put("userId", "10004");
+    body.put("username", "张三");
+    body.put("sex", "男");
+
+    String token = Jwts.builder()
+            .setHeader(head)
+            .setClaims(body)
+            .setExpiration(new Date(new Date().getTime() + 2 * 1000))//2秒
+            .setId("jwt4")
+            .signWith(SignatureAlgorithm.RS256, getPriKey())
+            .compact();
+    System.out.println(token);
+
+
+    Thread.sleep(2000);
+
+    Jwt jwt = Jwts.parser()
+            .setSigningKey(getPubKey())
+            .parse(token);
+    Header header = jwt.getHeader();
+    Object body2 = jwt.getBody();
+    System.out.println(jwt);
+    System.out.println(header);
+    System.out.println(body2);
+}
+```
+
+
+
+
+
+![image-20221102210100559](img/jwt学习笔记/image-20221102210100559.png)
+
+
+
+
+
+
+
+
+
+```java
+/**
+ * 生成jwt令牌，基于RS256签名算法，带过期时间，解析没有过期的情况
+ */
+@Test
+void test12() throws Exception
+{
+    Map<String, Object> head = new HashMap<>();
+    head.put("alg", SignatureAlgorithm.RS256.getValue());
+    head.put("typ", "JWT");
+
+    Map<String, Object> body = new HashMap<>();
+    body.put("userId", "10004");
+    body.put("username", "张三");
+    body.put("sex", "男");
+
+    String token = Jwts.builder()
+            .setHeader(head)
+            .setClaims(body)
+            .setExpiration(new Date(new Date().getTime() + 2 * 1000))//2秒
+            .setId("jwt4")
+            .signWith(SignatureAlgorithm.RS256, getPriKey())
+            .compact();
+    System.out.println(token);
+
+
+    //Thread.sleep(2000);
+
+    System.out.println("\n-------\n");
+
+    Jwt jwt = Jwts.parser()
+            .setSigningKey(getPubKey())
+            .parse(token);
+    Header header = jwt.getHeader();
+    Object body2 = jwt.getBody();
+    System.out.println(jwt);
+    System.out.println(header);
+    System.out.println(body2);
+}
+```
+
+
+
+
+
+![image-20221102210252811](img/jwt学习笔记/image-20221102210252811.png)
+
+
+
+
+
+
+
+
+
+全部源码：
+
+```java
+package mao;
+
+import cn.hutool.core.io.FileUtil;
+import io.jsonwebtoken.Header;
+import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import org.junit.jupiter.api.Test;
+
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Project name(项目名称)：jwt_demo
+ * Package(包名): mao
+ * Class(类名): JwtTest
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/2
+ * Time(创建时间)： 13:40
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class JwtTest
+{
+
+    /**
+     * 生成token，不使用签名
+     */
+    @Test
+    void test1()
+    {
+        Map<String, Object> head = new HashMap<>();
+        head.put("alg", "none");
+        head.put("typ", "JWT");
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("userId", "10001");
+        body.put("username", "张三");
+        body.put("sex", "男");
+
+        String token = Jwts.builder()
+                .setHeader(head)
+                .setClaims(body)
+                .setId("jwt1")
+                .compact();
+        System.out.println(token);
+        //eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMSIsImp0aSI6Imp3dDEiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9.
+    }
+
+    /**
+     * 解析token，不使用签名
+     */
+    @Test
+    void test2()
+    {
+        Jwt jwt = Jwts.parser().parse("eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0." +
+                "eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMSIsImp0aSI6Imp3dDEiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9.");
+        Header header = jwt.getHeader();
+        Object body = jwt.getBody();
+        System.out.println(jwt);
+        System.out.println(header);
+        System.out.println(body);
+    }
+
+
+    /**
+     * 生成token，使用hs256签名算法
+     */
+    @Test
+    void test3()
+    {
+        Map<String, Object> head = new HashMap<>();
+        head.put("alg", SignatureAlgorithm.HS256.getValue());
+        head.put("typ", "JWT");
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("userId", "10002");
+        body.put("username", "张三");
+        body.put("sex", "男");
+
+        String token = Jwts.builder()
+                .setHeader(head)
+                .setClaims(body)
+                .setId("jwt2")
+                .signWith(SignatureAlgorithm.HS256, "123456")
+                .compact();
+        System.out.println(token);
+        //eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9
+        // .eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMiIsImp0aSI6Imp3dDIiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9
+        // .9TC0U77uYueqnUdU_we2yVUZ6uj9mrsLPhjr4gB2v98
+    }
+
+    /**
+     * 解析token，使用hs256签名算法，不设置SigningKey的情况
+     */
+    @Test
+    void test4()
+    {
+        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+                ".eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMiIsImp0aSI6Imp3dDIiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9." +
+                "9TC0U77uYueqnUdU_we2yVUZ6uj9mrsLPhjr4gB2v98";
+
+        Jwt jwt = Jwts.parser()
+                .parse(token);
+        Header header = jwt.getHeader();
+        Object body = jwt.getBody();
+        System.out.println(jwt);
+        System.out.println(header);
+        System.out.println(body);
+    }
+
+
+    /**
+     * 解析token，使用hs256签名算法，SigningKey错误的情况
+     */
+    @Test
+    void test5()
+    {
+        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+                ".eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMiIsImp0aSI6Imp3dDIiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9." +
+                "9TC0U77uYueqnUdU_we2yVUZ6uj9mrsLPhjr4gB2v98";
+
+        Jwt jwt = Jwts.parser()
+                .setSigningKey("1236")
+                .parse(token);
+        Header header = jwt.getHeader();
+        Object body = jwt.getBody();
+        System.out.println(jwt);
+        System.out.println(header);
+        System.out.println(body);
+    }
+
+    /**
+     * 解析token，使用hs256签名算法，SigningKey正确的情况
+     */
+    @Test
+    void test6()
+    {
+        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+                ".eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMiIsImp0aSI6Imp3dDIiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9." +
+                "9TC0U77uYueqnUdU_we2yVUZ6uj9mrsLPhjr4gB2v98";
+
+        Jwt jwt = Jwts.parser()
+                .setSigningKey("123456")
+                .parse(token);
+        Header header = jwt.getHeader();
+        Object body = jwt.getBody();
+        System.out.println(jwt);
+        System.out.println(header);
+        System.out.println(body);
+    }
+
+
+    /**
+     * 生成jwt令牌，基于RS256签名算法，错误
+     */
+    @Test
+    void test7()
+    {
+        Map<String, Object> head = new HashMap<>();
+        head.put("alg", SignatureAlgorithm.RS256.getValue());
+        head.put("typ", "JWT");
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("userId", "10003");
+        body.put("username", "张三");
+        body.put("sex", "男");
+
+        String token = Jwts.builder()
+                .setHeader(head)
+                .setClaims(body)
+                .setId("jwt3")
+                .signWith(SignatureAlgorithm.RS256, "123456")
+                .compact();
+        System.out.println(token);
+    }
+
+
+    /**
+     * 生成自己的 秘钥/公钥 对
+     *
+     * @throws Exception 异常
+     */
+    @Test
+    public void test8() throws Exception
+    {
+        //自定义 随机密码,  请修改这里
+        String password = "123456";
+
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
+        SecureRandom secureRandom = new SecureRandom(password.getBytes());
+        keyPairGenerator.initialize(1024, secureRandom);
+        KeyPair keyPair = keyPairGenerator.genKeyPair();
+
+        byte[] publicKeyBytes = keyPair.getPublic().getEncoded();
+        byte[] privateKeyBytes = keyPair.getPrivate().getEncoded();
+
+        FileUtil.writeBytes(publicKeyBytes, "./pub.key");
+        FileUtil.writeBytes(privateKeyBytes, "./pri.key");
+    }
+
+    //获取私钥
+    public PrivateKey getPriKey() throws Exception
+    {
+//        InputStream inputStream =
+//                this.getClass().getClassLoader().getResourceAsStream("pri.key");
+        FileInputStream inputStream = new FileInputStream("./pri.key");
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
+        byte[] keyBytes = new byte[inputStream.available()];
+        dataInputStream.readFully(keyBytes);
+        PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePrivate(pkcs8EncodedKeySpec);
+    }
+
+    //获取公钥
+    public PublicKey getPubKey() throws Exception
+    {
+//        InputStream inputStream =
+//                this.getClass().getClassLoader().getResourceAsStream("pub.key");
+        FileInputStream inputStream = new FileInputStream("./pub.key");
+        DataInputStream dataInputStream = new DataInputStream(inputStream);
+        byte[] keyBytes = new byte[inputStream.available()];
+        dataInputStream.readFully(keyBytes);
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        return keyFactory.generatePublic(spec);
+    }
+
+    /**
+     * 生成jwt令牌，基于RS256签名算法
+     */
+    @Test
+    void test9() throws Exception
+    {
+        Map<String, Object> head = new HashMap<>();
+        head.put("alg", SignatureAlgorithm.RS256.getValue());
+        head.put("typ", "JWT");
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("userId", "10003");
+        body.put("username", "张三");
+        body.put("sex", "男");
+
+        String token = Jwts.builder()
+                .setHeader(head)
+                .setClaims(body)
+                .setId("jwt3")
+                .signWith(SignatureAlgorithm.RS256, getPriKey())
+                .compact();
+        System.out.println(token);
+        //eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwM
+        // yIsImp0aSI6Imp3dDMiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9.Ke2o0WFNNQp71Sdd056bP2Z2
+        // CywxfaV4M9OUtsPNBmrLWSLNOkqUao3DiTdX2kLMMWjVQ4THnCQHRiJhXa2uPX6qLfNPHh
+        // CC1unYFBlU17WAPSfpp3BeEF4UK3G5GOiamLFghiowlwG84_3AuNFOj8JZXY4Beq_FpT9PSo1608M
+    }
+
+    /**
+     * 解析jwt令牌，基于RS256签名算法
+     */
+    @Test
+    void test10() throws Exception
+    {
+        String token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9" +
+                ".eyJzZXgiOiLnlLciLCJ1c2VySWQiOiIxMDAwMyIsImp0aSI6Imp3dDMiLCJ1c2VybmFtZSI6IuW8oOS4iSJ9" +
+                ".Ke2o0WFNNQp71Sdd056bP2Z2CywxfaV4M9OUtsPNBmrLWSLNOkqUao3DiTdX2kLMMWjVQ4" +
+                "THnCQHRiJhXa2uPX6qLfNPHhCC1unYFBlU17WAPSfpp3BeEF4UK3G5GOiamLFghiowlwG84_3AuNFOj8JZXY4Beq_FpT9PSo1608M";
+
+        Jwt jwt = Jwts.parser()
+                .setSigningKey(getPubKey())
+                .parse(token);
+        Header header = jwt.getHeader();
+        Object body = jwt.getBody();
+        System.out.println(jwt);
+        System.out.println(header);
+        System.out.println(body);
+    }
+
+    /**
+     * 生成jwt令牌，基于RS256签名算法，带过期时间，解析过期的情况
+     */
+    @Test
+    void test11() throws Exception
+    {
+        Map<String, Object> head = new HashMap<>();
+        head.put("alg", SignatureAlgorithm.RS256.getValue());
+        head.put("typ", "JWT");
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("userId", "10004");
+        body.put("username", "张三");
+        body.put("sex", "男");
+
+        String token = Jwts.builder()
+                .setHeader(head)
+                .setClaims(body)
+                .setExpiration(new Date(new Date().getTime() + 2 * 1000))//2秒
+                .setId("jwt4")
+                .signWith(SignatureAlgorithm.RS256, getPriKey())
+                .compact();
+        System.out.println(token);
+
+
+        Thread.sleep(2000);
+
+        Jwt jwt = Jwts.parser()
+                .setSigningKey(getPubKey())
+                .parse(token);
+        Header header = jwt.getHeader();
+        Object body2 = jwt.getBody();
+        System.out.println(jwt);
+        System.out.println(header);
+        System.out.println(body2);
+    }
+
+
+    /**
+     * 生成jwt令牌，基于RS256签名算法，带过期时间，解析没有过期的情况
+     */
+    @Test
+    void test12() throws Exception
+    {
+        Map<String, Object> head = new HashMap<>();
+        head.put("alg", SignatureAlgorithm.RS256.getValue());
+        head.put("typ", "JWT");
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("userId", "10004");
+        body.put("username", "张三");
+        body.put("sex", "男");
+
+        String token = Jwts.builder()
+                .setHeader(head)
+                .setClaims(body)
+                .setExpiration(new Date(new Date().getTime() + 2 * 1000))//2秒
+                .setId("jwt4")
+                .signWith(SignatureAlgorithm.RS256, getPriKey())
+                .compact();
+        System.out.println(token);
+
+
+        //Thread.sleep(2000);
+
+        System.out.println("\n-------\n");
+
+        Jwt jwt = Jwts.parser()
+                .setSigningKey(getPubKey())
+                .parse(token);
+        Header header = jwt.getHeader();
+        Object body2 = jwt.getBody();
+        System.out.println(jwt);
+        System.out.println(header);
+        System.out.println(body2);
+    }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 自定义spring boot starter
+
+
+
