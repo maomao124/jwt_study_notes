@@ -1231,5 +1231,904 @@ public class JwtTest
 
 ## 自定义spring boot starter
 
+### 开发starter
+
+
+
+第一步：初始化项目
+
+
+
+创建父工程jwt_spring_boot_starter
+
+
+
+![image-20221102215656128](img/jwt学习笔记/image-20221102215656128.png)
+
+
+
+
+
+创建子工程tools-jwt
+
+
+
+![image-20221102215901750](img/jwt学习笔记/image-20221102215901750.png)
+
+
+
+
+
+创建子工程use-starter
+
+
+
+![image-20221102215939619](img/jwt学习笔记/image-20221102215939619.png)
+
+
+
+
+
+
+
+第二步：修改pom文件
+
+
+
+父工程jwt_spring_boot_starter的pom文件：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.7.1</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>mao</groupId>
+    <artifactId>jwt_spring_boot_starter</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>jwt_spring_boot_starter</name>
+    <description>jwt_spring_boot_starter</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <java.version>11</java.version>
+    </properties>
+
+    <modules>
+        <module>tools-jwt</module>
+        <module>use-starter</module>
+    </modules>
+
+    <dependencies>
+
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>
+```
+
+
+
+
+
+子工程tools-jwt的pom文件：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+       <artifactId>jwt_spring_boot_starter</artifactId>
+        <groupId>mao</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>tools-jwt</artifactId>
+    <name>tools-jwt</name>
+    <description>tools-jwt</description>
+    <properties>
+
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--jwt 依赖-->
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.9.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.0</version>
+        </dependency>
+
+        <!--java 8 版本不需要添加-->
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-core</artifactId>
+            <version>2.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.activation</groupId>
+            <artifactId>activation</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <!-- 过滤后缀为pem、pfx的证书文件 -->
+                    <nonFilteredFileExtensions>
+                        <nonFilteredFileExtension>pem</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>pfx</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>p12</nonFilteredFileExtension>
+                        <nonFilteredFileExtension>key</nonFilteredFileExtension>
+                    </nonFilteredFileExtensions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+
+</project>
+```
+
+
+
+
+
+子工程use-starter的pom文件：
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>jwt_spring_boot_starter</artifactId>
+        <groupId>mao</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>use-starter</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>use-starter</name>
+    <description>use-starter</description>
+    <properties>
+
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+
+
+
+
+
+
+第三步：编写实体类JwtUserInfo
+
+
+
+```java
+package com.example.tools_jwt.entity;
+
+import java.io.Serializable;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.entity
+ * Class(类名): JwtUserInfo
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/2
+ * Time(创建时间)： 22:12
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+
+public class JwtUserInfo implements Serializable
+{
+    /**
+     * 账号id
+     */
+    private Long userId;
+    /**
+     * 账号
+     */
+    private String account;
+    /**
+     * 姓名
+     */
+    private String name;
+
+    /**
+     * 当前登录人单位id
+     */
+    private Long orgId;
+
+    /**
+     * 当前登录人岗位ID
+     */
+    private Long stationId;
+
+    /**
+     * Instantiates a new Jwt user info.
+     */
+    public JwtUserInfo()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Jwt user info.
+     *
+     * @param userId    the user id
+     * @param account   the account
+     * @param name      the name
+     * @param orgId     the org id
+     * @param stationId the station id
+     */
+    public JwtUserInfo(Long userId, String account, String name, Long orgId, Long stationId)
+    {
+        this.userId = userId;
+        this.account = account;
+        this.name = name;
+        this.orgId = orgId;
+        this.stationId = stationId;
+    }
+
+    /**
+     * Gets user id.
+     *
+     * @return the user id
+     */
+    public Long getUserId()
+    {
+        return userId;
+    }
+
+    /**
+     * Sets user id.
+     *
+     * @param userId the user id
+     */
+    public void setUserId(Long userId)
+    {
+        this.userId = userId;
+    }
+
+    /**
+     * Gets account.
+     *
+     * @return the account
+     */
+    public String getAccount()
+    {
+        return account;
+    }
+
+    /**
+     * Sets account.
+     *
+     * @param account the account
+     */
+    public void setAccount(String account)
+    {
+        this.account = account;
+    }
+
+    /**
+     * Gets name.
+     *
+     * @return the name
+     */
+    public String getName()
+    {
+        return name;
+    }
+
+    /**
+     * Sets name.
+     *
+     * @param name the name
+     */
+    public void setName(String name)
+    {
+        this.name = name;
+    }
+
+    /**
+     * Gets org id.
+     *
+     * @return the org id
+     */
+    public Long getOrgId()
+    {
+        return orgId;
+    }
+
+    /**
+     * Sets org id.
+     *
+     * @param orgId the org id
+     */
+    public void setOrgId(Long orgId)
+    {
+        this.orgId = orgId;
+    }
+
+    /**
+     * Gets station id.
+     *
+     * @return the station id
+     */
+    public Long getStationId()
+    {
+        return stationId;
+    }
+
+    /**
+     * Sets station id.
+     *
+     * @param stationId the station id
+     */
+    public void setStationId(Long stationId)
+    {
+        this.stationId = stationId;
+    }
+
+    @Override
+    public String toString()
+    {
+        final StringBuffer sb = new StringBuffer("JwtUserInfo{");
+        sb.append("userId=").append(userId);
+        sb.append(", account='").append(account).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", orgId=").append(orgId);
+        sb.append(", stationId=").append(stationId);
+        sb.append('}');
+        return sb.toString();
+    }
+}
+```
+
+
+
+
+
+第四步：编写实体类Token
+
+
+
+```java
+package com.example.tools_jwt.entity;
+
+import io.swagger.annotations.ApiModelProperty;
+
+import java.io.Serializable;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.entity
+ * Class(类名): Token
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/2
+ * Time(创建时间)： 22:15
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+public class Token implements Serializable
+{
+    private static final long serialVersionUID = -8482946147572784305L;
+
+    /**
+     * token
+     */
+    @ApiModelProperty(value = "token")
+    private String token;
+    /**
+     * 有效时间：单位：秒
+     */
+    @ApiModelProperty(value = "token的有效期")
+    private Integer expire;
+
+    /**
+     * Instantiates a new Token.
+     */
+    public Token()
+    {
+
+    }
+
+    /**
+     * Instantiates a new Token.
+     *
+     * @param token  the token
+     * @param expire the expire
+     */
+    public Token(String token, Integer expire)
+    {
+        this.token = token;
+        this.expire = expire;
+    }
+
+    /**
+     * Gets token.
+     *
+     * @return the token
+     */
+    public String getToken()
+    {
+        return token;
+    }
+
+    /**
+     * Sets token.
+     *
+     * @param token the token
+     */
+    public void setToken(String token)
+    {
+        this.token = token;
+    }
+
+    /**
+     * Gets expire.
+     *
+     * @return the expire
+     */
+    public Integer getExpire()
+    {
+        return expire;
+    }
+
+    /**
+     * Sets expire.
+     *
+     * @param expire the expire
+     */
+    public void setExpire(Integer expire)
+    {
+        this.expire = expire;
+    }
+}
+```
+
+
+
+
+
+第五步：编写工具类RsaKeyHelper
+
+
+
+```java
+package com.example.tools_jwt.utils;
+
+import java.io.DataInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.utils
+ * Class(类名): RsaKeyHelper
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/2
+ * Time(创建时间)： 22:19
+ * Version(版本): 1.0
+ * Description(描述)： Rsa key 帮助类
+ */
+
+public class RsaKeyHelper
+{
+
+    /**
+     * 获取公钥,用于解析token
+     *
+     * @param filename 文件名
+     * @return {@link PublicKey}
+     * @throws IOException              ioexception
+     * @throws NoSuchAlgorithmException 没有这样算法异常
+     * @throws InvalidKeySpecException  无效关键规范异常
+     */
+    public PublicKey getPublicKey(String filename) throws IOException, NoSuchAlgorithmException, InvalidKeySpecException
+    {
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filename);
+        if (inputStream == null)
+        {
+            throw new IOException("获取公钥时获取失败，可能是公钥文件不存在。当前路径：" + filename);
+        }
+        try (DataInputStream dataInputStream = new DataInputStream(inputStream))
+        {
+            byte[] keyBytes = new byte[inputStream.available()];
+            dataInputStream.readFully(keyBytes);
+            X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            return keyFactory.generatePublic(x509EncodedKeySpec);
+        }
+    }
+
+
+    /**
+     * 获取私钥 用于生成token
+     *
+     * @param filename 文件名
+     * @return {@link PrivateKey}
+     * @throws IOException              ioexception
+     * @throws NoSuchAlgorithmException 没有这样算法异常
+     * @throws InvalidKeySpecException  无效关键规范异常
+     */
+    public PrivateKey getPrivateKey(String filename)
+            throws IOException, NoSuchAlgorithmException, InvalidKeySpecException
+    {
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(filename);
+        if (inputStream == null)
+        {
+            throw new IOException("获取私钥时获取失败，可能是私钥文件不存在。当前路径：" + filename);
+        }
+        try (DataInputStream dataInputStream = new DataInputStream(inputStream))
+        {
+            byte[] keyBytes = new byte[inputStream.available()];
+            dataInputStream.readFully(keyBytes);
+
+            PKCS8EncodedKeySpec pkcs8EncodedKeySpec = new PKCS8EncodedKeySpec(keyBytes);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            return keyFactory.generatePrivate(pkcs8EncodedKeySpec);
+        }
+    }
+}
+```
+
+
+
+
+
+第六步：编写工具类NumberHelper
+
+
+
+```java
+package com.example.tools_jwt.utils;
+
+import java.util.function.Function;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.utils
+ * Class(类名): NumberHelper
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/2
+ * Time(创建时间)： 22:27
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class NumberHelper
+{
+    private static <T, R> R valueOfDef(T t, Function<T, R> function, R def)
+    {
+        try
+        {
+            return function.apply(t);
+        }
+        catch (Exception e)
+        {
+            return def;
+        }
+    }
+
+    public static Long longValueOfNil(String value)
+    {
+        return valueOfDef(value, (val) -> Long.valueOf(val), null);
+    }
+
+    public static Long longValueOf0(String value)
+    {
+        return valueOfDef(value, (val) -> Long.valueOf(val), 0L);
+    }
+
+    public static Long longValueOfNil(Object value)
+    {
+        return valueOfDef(value, (val) -> Long.valueOf(val.toString()), null);
+    }
+
+    public static Long longValueOf0(Object value)
+    {
+        return valueOfDef(value, (val) -> Long.valueOf(val.toString()), 0L);
+    }
+
+    public static Boolean boolValueOf0(Object value)
+    {
+        return valueOfDef(value, (val) -> Boolean.valueOf(val.toString()), false);
+    }
+
+    public static Integer intValueOfNil(String value)
+    {
+        return valueOfDef(value, (val) -> Integer.valueOf(val), null);
+    }
+
+    public static Integer intValueOf0(String value)
+    {
+        return intValueOf(value, 0);
+    }
+
+    public static Integer intValueOf(String value, Integer def)
+    {
+        return valueOfDef(value, (val) -> Integer.valueOf(val), def);
+    }
+
+    public static Integer intValueOfNil(Object value)
+    {
+        return valueOfDef(value, (val) -> Integer.valueOf(val.toString()), null);
+    }
+
+    public static Integer intValueOf0(Object value)
+    {
+        return valueOfDef(value, (val) -> Integer.valueOf(val.toString()), 0);
+    }
+
+    public static Integer getOrDef(Integer val, Integer def)
+    {
+        return val == null ? def : val;
+    }
+
+    public static Long getOrDef(Long val, Long def)
+    {
+        return val == null ? def : val;
+    }
+
+    public static Boolean getOrDef(Boolean val, Boolean def)
+    {
+        return val == null ? def : val;
+    }
+}
+```
+
+
+
+
+
+第七步：编写工具类StrHelper
+
+
+
+```java
+package com.example.tools_jwt.utils;
+
+import cn.hutool.core.util.StrUtil;
+
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.utils
+ * Class(类名): StrHelper
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/2
+ * Time(创建时间)： 22:28
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class StrHelper
+{
+    public static String getObjectValue(Object obj)
+    {
+        return obj == null ? "" : obj.toString();
+    }
+
+    public static String encode(String value)
+    {
+        try
+        {
+            return URLEncoder.encode(value, StandardCharsets.UTF_8);
+        }
+        catch (Exception e)
+        {
+            return "";
+        }
+    }
+
+    public static String decode(String value)
+    {
+        try
+        {
+            return URLDecoder.decode(value, StandardCharsets.UTF_8);
+        }
+        catch (Exception e)
+        {
+            return "";
+        }
+    }
+
+    public static String getOrDef(String val, String def)
+    {
+        return StrUtil.isEmpty(val) ? def : val;
+    }
+}
+```
+
+
+
+
+
+
+
+第八步：编写接口BaseException
+
+
+
+```java
+package com.example.tools_jwt.exception;
+
+/**
+ * 异常接口类
+ */
+public interface BaseException
+{
+
+    /**
+     * 统一参数验证异常码
+     */
+    int BASE_VALID_PARAM = -9;
+
+    /**
+     * 返回异常信息
+     *
+     * @return {@link String}
+     */
+    String getMessage();
+
+    /**
+     * 返回异常编码
+     *
+     * @return int
+     */
+    int getCode();
+
+}
+```
+
+
+
+
+
+第九步：编写接口BaseExceptionCode
+
+
+
+```java
+package com.example.tools_jwt.exception;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.exception
+ * Interface(接口名): BaseExceptionCode
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/2
+ * Time(创建时间)： 22:32
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public interface BaseExceptionCode
+{
+    /**
+     * 异常编码
+     *
+     * @return int
+     */
+    int getCode();
+
+    /**
+     * 异常消息
+     *
+     * @return String
+     */
+    String getMsg();
+}
+```
+
+
+
+
+
+第十步：编写类BaseUncheckedException
+
 
 
