@@ -1332,7 +1332,7 @@ public class JwtTest
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-       <artifactId>jwt_spring_boot_starter</artifactId>
+        <artifactId>jwt_spring_boot_starter</artifactId>
         <groupId>mao</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
@@ -1386,6 +1386,12 @@ public class JwtTest
             <version>1.1.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>2.0.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -1415,8 +1421,8 @@ public class JwtTest
     </build>
 
 
-
 </project>
+
 ```
 
 
@@ -3617,7 +3623,20 @@ import java.lang.annotation.*;
 public @interface EnableAuthClient
 {
 
+/*
+配置文件示例：
+
+
+authentication:
+  user:
+    # 过期时间
+    expire: 1800
+    # 公钥位置
+    pubKey: keys/pub.key
+
+ */
 }
+
 ```
 
 
@@ -3878,8 +3897,24 @@ import java.lang.annotation.*;
 @Import(AuthServerConfiguration.class)
 public @interface EnableAuthServer
 {
-    
+
+/*
+
+配置文件示例：
+
+
+authentication:
+  user:
+    # 过期时间
+    expire: 1800
+    # 私钥位置
+    prikey: keys/pri.key
+    # 公钥位置
+    pubKey: keys/pub.key
+
+ */
 }
+
 ```
 
 
@@ -3895,4 +3930,308 @@ public @interface EnableAuthServer
 
 
 ### 使用starter
+
+JwtTokenServerUtils主要是提供给权限服务的，类中包含生成jwt和解析jwt两个方法
+
+JwtTokenClientUtils主要是提供给网关服务的，类中只有一个解析jwt的方法
+
+需要注意的是tools-jwt并不是starter，所以如果只是在项目中引入他的maven坐标并不能直接使用其提供的工具类。需要在启动类上加入pd-tools-jwt模块中定义的注解@EnableAuthServer或者@EnableAuthClient。
+
+tools-jwt使用的签名算法为RS256，需要我们自己的应用来提供一对公钥和私钥，然后在application.yml中进行配置即可
+
+
+
+
+
+第一步：导入tools-jwt的依赖
+
+
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <artifactId>jwt_spring_boot_starter</artifactId>
+        <groupId>mao</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>use-starter</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>use-starter</name>
+    <description>use-starter</description>
+    <properties>
+
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>mao</groupId>
+            <artifactId>tools-jwt</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
+```
+
+
+
+
+
+
+
+第二步：在资源路径下创建keys目录，将通过RSA算法生成的公钥和私钥复制到此目录下
+
+
+
+![image-20221103131508924](img/jwt学习笔记/image-20221103131508924.png)
+
+
+
+
+
+
+
+第三步：编写application.yml文件
+
+
+
+```yaml
+authentication:
+  user:
+    # 过期时间
+    expire: 1800
+    # 私钥位置
+    prikey: keys/pri.key
+    # 公钥位置
+    pubKey: keys/pub.key
+```
+
+
+
+
+
+
+
+第四步：在启动类加注解@EnableAuthServer
+
+
+
+```java
+package mao.use_starter;
+
+import com.example.tools_jwt.server.EnableAuthServer;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+@EnableAuthServer
+public class UseStarterApplication
+{
+
+    public static void main(String[] args)
+    {
+        SpringApplication.run(UseStarterApplication.class, args);
+    }
+
+}
+```
+
+
+
+
+
+第五步：编写UserController
+
+
+
+```java
+package mao.use_starter.controller;
+
+import com.example.tools_jwt.entity.JwtUserInfo;
+import com.example.tools_jwt.entity.Token;
+import com.example.tools_jwt.exception.BizException;
+import com.example.tools_jwt.server.utils.JwtTokenServerUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): mao.use_starter.controller
+ * Class(类名): UserController
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/3
+ * Time(创建时间)： 13:24
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@RestController
+@RequestMapping("/user")
+public class UserController
+{
+
+    @Autowired
+    private JwtTokenServerUtils jwtTokenServerUtils;
+
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
+
+    @GetMapping("/login")
+    public Token login()
+    {
+        JwtUserInfo jwtUserInfo = new JwtUserInfo();
+        jwtUserInfo.setName("张三");
+        jwtUserInfo.setOrgId(100001L);
+        jwtUserInfo.setUserId(100000001L);
+        jwtUserInfo.setAccount("张三");
+        jwtUserInfo.setStationId(20001L);
+        Token token = jwtTokenServerUtils.generateUserToken(jwtUserInfo, null);
+        log.info(token.getToken());
+        return token;
+    }
+
+    @GetMapping("/{token}")
+    public boolean test(@PathVariable String token)
+    {
+        log.info(token);
+
+        try
+        {
+            JwtUserInfo userInfo = jwtTokenServerUtils.getUserInfo(token);
+            log.info(userInfo.toString());
+            return true;
+        }
+        catch (BizException e)
+        {
+            log.error(e.getMessage());
+            return false;
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+第六步：启动服务
+
+
+
+```sh
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.7.1)
+
+2022-11-03 13:37:33.952  INFO 1868 --- [           main] mao.use_starter.UseStarterApplication    : Starting UseStarterApplication using Java 16.0.2 on mao with PID 1868 (H:\程序\大四上期\jwt_spring_boot_starter\use-starter\target\classes started by mao in H:\程序\大四上期\jwt_spring_boot_starter)
+2022-11-03 13:37:33.955  INFO 1868 --- [           main] mao.use_starter.UseStarterApplication    : No active profile set, falling back to 1 default profile: "default"
+2022-11-03 13:37:34.632  INFO 1868 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port(s): 8080 (http)
+2022-11-03 13:37:34.639  INFO 1868 --- [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2022-11-03 13:37:34.640  INFO 1868 --- [           main] org.apache.catalina.core.StandardEngine  : Starting Servlet engine: [Apache Tomcat/9.0.64]
+2022-11-03 13:37:34.730  INFO 1868 --- [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2022-11-03 13:37:34.730  INFO 1868 --- [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 738 ms
+2022-11-03 13:37:34.974  INFO 1868 --- [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port(s): 8080 (http) with context path ''
+2022-11-03 13:37:34.984  INFO 1868 --- [           main] mao.use_starter.UseStarterApplication    : Started UseStarterApplication in 1.31 seconds (JVM running for 1.774)
+```
+
+
+
+
+
+第七步：访问
+
+
+
+http://localhost:8080/user/login
+
+
+
+![image-20221103133830100](img/jwt学习笔记/image-20221103133830100.png)
+
+
+
+
+
+将拿到的token拼接到http://localhost:8080/user/的后面
+
+
+
+![image-20221103133953793](img/jwt学习笔记/image-20221103133953793.png)
+
+
+
+```sh
+2022-11-03 13:40:25.213  INFO 1868 --- [nio-8080-exec-9] m.use_starter.controller.UserController  : JwtUserInfo{userId=100000001, account='张三', name='张三', orgId=100001, stationId=20001}
+```
+
+
+
+
+
+尝试更改一个字符
+
+
+
+![image-20221103134032668](img/jwt学习笔记/image-20221103134032668.png)
+
+
+
+
+
+```sh
+2022-11-03 13:40:28.529 ERROR 1868 --- [io-8080-exec-10] m.use_starter.controller.UserController  : 不合法的token，请认真比对 token 的签名
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
