@@ -1,3 +1,31 @@
+[TOC]
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # jwt
@@ -1235,7 +1263,7 @@ public class JwtTest
 
 
 
-第一步：初始化项目
+#### 第一步：初始化项目
 
 
 
@@ -1271,7 +1299,7 @@ public class JwtTest
 
 
 
-第二步：修改pom文件
+#### 第二步：修改pom文件
 
 
 
@@ -1484,7 +1512,7 @@ public class JwtTest
 
 
 
-第三步：编写实体类JwtUserInfo
+#### 第三步：编写实体类JwtUserInfo
 
 
 
@@ -1677,7 +1705,7 @@ public class JwtUserInfo implements Serializable
 
 
 
-第四步：编写实体类Token
+#### 第四步：编写实体类Token
 
 
 
@@ -1781,7 +1809,7 @@ public class Token implements Serializable
 
 
 
-第五步：编写工具类RsaKeyHelper
+#### 第五步：编写工具类RsaKeyHelper
 
 
 
@@ -1876,7 +1904,7 @@ public class RsaKeyHelper
 
 
 
-第六步：编写工具类NumberHelper
+#### 第六步：编写工具类NumberHelper
 
 
 
@@ -1983,7 +2011,7 @@ public class NumberHelper
 
 
 
-第七步：编写工具类StrHelper
+#### 第七步：编写工具类StrHelper
 
 
 
@@ -2053,7 +2081,7 @@ public class StrHelper
 
 
 
-第八步：编写接口BaseException
+#### 第八步：编写接口BaseException
 
 
 
@@ -2092,7 +2120,7 @@ public interface BaseException
 
 
 
-第九步：编写接口BaseExceptionCode
+#### 第九步：编写接口BaseExceptionCode
 
 
 
@@ -2134,7 +2162,7 @@ public interface BaseExceptionCode
 
 
 
-第十步：编写类BaseUncheckedException
+#### 第十步：编写类BaseUncheckedException
 
 
 
@@ -2192,7 +2220,7 @@ public class BaseUncheckedException extends RuntimeException implements BaseExce
 
 
 
-第十一步：编写类ExceptionCode
+#### 第十一步：编写类ExceptionCode
 
 
 
@@ -2315,7 +2343,7 @@ public enum ExceptionCode implements BaseExceptionCode
 
 
 
-第十二步：编写类BizException
+#### 第十二步：编写类BizException
 
 
 
@@ -2389,7 +2417,7 @@ public class BizException extends BaseUncheckedException
 
 
 
-第十三步：编写常量工具类BaseContextConstants
+#### 第十三步：编写常量工具类BaseContextConstants
 
 
 
@@ -2440,7 +2468,7 @@ public class BaseContextConstants {
 
 
 
-第十四步：编写日期工具类DateUtils
+#### 第十四步：编写日期工具类DateUtils
 
 
 
@@ -3238,7 +3266,7 @@ public class DateUtils
 
 
 
-第十五步：编写工具类JwtHelper
+#### 第十五步：编写工具类JwtHelper
 
 
 
@@ -3405,7 +3433,7 @@ public class JwtHelper
 
 
 
-第十六步：编写类AuthClientConfigurationProperties
+#### 第十六步：编写类AuthClientConfigurationProperties
 
 
 
@@ -3504,7 +3532,7 @@ public class AuthClientConfigurationProperties
 
 
 
-第十七步：编写工具类JwtTokenClientUtils
+#### 第十七步：编写工具类JwtTokenClientUtils
 
 
 
@@ -3562,7 +3590,7 @@ public class JwtTokenClientUtils
 
 
 
-第十八步：编写配置类AuthClientConfiguration
+#### 第十八步：编写配置类AuthClientConfiguration
 
 
 
@@ -3602,7 +3630,7 @@ public class AuthClientConfiguration
 
 
 
-第十九步：编写注解EnableAuthClient
+#### 第十九步：编写注解EnableAuthClient
 
 
 
@@ -3645,7 +3673,7 @@ authentication:
 
 
 
-第二十步：编写类AuthServerConfigurationProperties
+#### 第二十步：编写类AuthServerConfigurationProperties
 
 
 
@@ -3758,7 +3786,7 @@ public class AuthServerConfigurationProperties
 
 
 
-第二十一步：编写工具类JwtTokenServerUtils
+#### 第二十一步：编写工具类JwtTokenServerUtils
 
 
 
@@ -3838,7 +3866,7 @@ public class JwtTokenServerUtils
 
 
 
-第二十二步：编写工具类AuthServerConfiguration
+#### 第二十二步：编写工具类AuthServerConfiguration
 
 
 
@@ -3878,7 +3906,7 @@ public class AuthServerConfiguration
 
 
 
-第二十三步：编写注解EnableAuthServer
+#### 第二十三步：编写注解EnableAuthServer
 
 
 
@@ -3943,7 +3971,7 @@ tools-jwt使用的签名算法为RS256，需要我们自己的应用来提供一
 
 
 
-第一步：导入tools-jwt的依赖
+#### 第一步：导入tools-jwt的依赖
 
 
 
@@ -4006,7 +4034,7 @@ tools-jwt使用的签名算法为RS256，需要我们自己的应用来提供一
 
 
 
-第二步：在资源路径下创建keys目录，将通过RSA算法生成的公钥和私钥复制到此目录下
+#### 第二步：在资源路径下创建keys目录，将通过RSA算法生成的公钥和私钥复制到此目录下
 
 
 
@@ -4018,7 +4046,7 @@ tools-jwt使用的签名算法为RS256，需要我们自己的应用来提供一
 
 
 
-第三步：编写application.yml文件
+#### 第三步：编写application.yml文件
 
 
 
@@ -4039,7 +4067,7 @@ authentication:
 
 
 
-第四步：在启动类加注解@EnableAuthServer
+#### 第四步：在启动类加注解@EnableAuthServer
 
 
 
@@ -4067,7 +4095,7 @@ public class UseStarterApplication
 
 
 
-第五步：编写UserController
+#### 第五步：编写UserController
 
 
 
@@ -4146,7 +4174,7 @@ public class UserController
 
 
 
-第六步：启动服务
+#### 第六步：启动服务
 
 
 
@@ -4175,7 +4203,7 @@ public class UserController
 
 
 
-第七步：访问
+#### 第七步：访问
 
 
 
@@ -4230,6 +4258,30 @@ http://localhost:8080/user/login
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+
+end
+
+---
+
+by mao
+
+2022  11  03
+
+---
 
 
 
