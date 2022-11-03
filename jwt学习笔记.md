@@ -3399,4 +3399,500 @@ public class JwtHelper
 
 
 
-第十六步：
+第十六步：编写类AuthClientConfigurationProperties
+
+
+
+
+
+```java
+package com.example.tools_jwt.client.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import static com.example.tools_jwt.client.config.AuthClientConfigurationProperties.PREFIX;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.client.config
+ * Class(类名): AuthClientConfigurationProperties
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/3
+ * Time(创建时间)： 12:42
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@ConfigurationProperties(prefix = PREFIX)
+public class AuthClientConfigurationProperties
+{
+    public static final String PREFIX = "authentication";
+
+    private TokenInfo user;
+
+    public AuthClientConfigurationProperties()
+    {
+
+    }
+
+    public TokenInfo getUser()
+    {
+        return user;
+    }
+
+    public void setUser(TokenInfo user)
+    {
+        this.user = user;
+    }
+
+    public static class TokenInfo
+    {
+        /**
+         * 请求头名称
+         */
+        private String headerName;
+        /**
+         * 解密 网关使用
+         */
+        private String pubKey;
+
+        public TokenInfo()
+        {
+
+        }
+
+        public TokenInfo(String headerName, String pubKey)
+        {
+            this.headerName = headerName;
+            this.pubKey = pubKey;
+        }
+
+        public String getHeaderName()
+        {
+            return headerName;
+        }
+
+        public void setHeaderName(String headerName)
+        {
+            this.headerName = headerName;
+        }
+
+        public String getPubKey()
+        {
+            return pubKey;
+        }
+
+        public void setPubKey(String pubKey)
+        {
+            this.pubKey = pubKey;
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+第十七步：编写工具类JwtTokenClientUtils
+
+
+
+```java
+package com.example.tools_jwt.client.utils;
+
+import com.example.tools_jwt.client.config.AuthClientConfigurationProperties;
+import com.example.tools_jwt.entity.JwtUserInfo;
+import com.example.tools_jwt.exception.BizException;
+import com.example.tools_jwt.utils.JwtHelper;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.client.utils
+ * Class(类名): JwtTokenClientUtils
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/3
+ * Time(创建时间)： 12:45
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class JwtTokenClientUtils
+{
+    /**
+     * 用于 认证服务的 客户端使用（如 网关） ， 在网关获取到token后，
+     * 调用此工具类进行token 解析。
+     * 客户端一般只需要解析token 即可
+     */
+    private final AuthClientConfigurationProperties authClientConfigurationProperties;
+
+    public JwtTokenClientUtils(AuthClientConfigurationProperties authClientConfigurationProperties)
+    {
+        this.authClientConfigurationProperties = authClientConfigurationProperties;
+    }
+
+    /**
+     * 解析token，获取用户信息
+     *
+     * @param token 令牌
+     * @return {@link JwtUserInfo}
+     * @throws BizException 业务异常
+     */
+    public JwtUserInfo getUserInfo(String token) throws BizException
+    {
+        AuthClientConfigurationProperties.TokenInfo userTokenInfo = authClientConfigurationProperties.getUser();
+        return JwtHelper.getJwtFromToken(token, userTokenInfo.getPubKey());
+    }
+}
+```
+
+
+
+
+
+第十八步：编写配置类AuthClientConfiguration
+
+
+
+```java
+package com.example.tools_jwt.client.config;
+
+import com.example.tools_jwt.client.utils.JwtTokenClientUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.client.config
+ * Class(类名): AuthClientConfiguration
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/3
+ * Time(创建时间)： 12:49
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@EnableConfigurationProperties(AuthClientConfigurationProperties.class)
+public class AuthClientConfiguration
+{
+    @Bean
+    public JwtTokenClientUtils jwtTokenClientUtils(@Autowired AuthClientConfigurationProperties authClientConfigurationProperties)
+    {
+        return new JwtTokenClientUtils(authClientConfigurationProperties);
+    }
+}
+```
+
+
+
+
+
+第十九步：编写注解EnableAuthClient
+
+
+
+```java
+package com.example.tools_jwt.client;
+
+
+import com.example.tools_jwt.client.config.AuthClientConfiguration;
+import org.springframework.context.annotation.Import;
+
+import java.lang.annotation.*;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@Import(AuthClientConfiguration.class)
+public @interface EnableAuthClient
+{
+
+}
+```
+
+
+
+
+
+
+
+第二十步：编写类AuthServerConfigurationProperties
+
+
+
+```java
+package com.example.tools_jwt.server.config;
+
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.server.config
+ * Class(类名): AuthServerConfigurationProperties
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/3
+ * Time(创建时间)： 12:55
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@ConfigurationProperties(prefix = AuthServerConfigurationProperties.PREFIX)
+public class AuthServerConfigurationProperties
+{
+    public static final String PREFIX = "authentication";
+
+    private TokenInfo user;
+
+    public AuthServerConfigurationProperties()
+    {
+
+    }
+
+    public AuthServerConfigurationProperties(TokenInfo user)
+    {
+        this.user = user;
+    }
+
+    public TokenInfo getUser()
+    {
+        return user;
+    }
+
+    public void setUser(TokenInfo user)
+    {
+        this.user = user;
+    }
+
+    public static class TokenInfo
+    {
+        /**
+         * 过期时间
+         */
+        private Integer expire = 7200;
+        /**
+         * 加密 服务使用
+         */
+        private String priKey;
+        /**
+         * 解密
+         */
+        private String pubKey;
+
+        public TokenInfo()
+        {
+
+        }
+
+        public TokenInfo(Integer expire, String priKey, String pubKey)
+        {
+            this.expire = expire;
+            this.priKey = priKey;
+            this.pubKey = pubKey;
+        }
+
+        public Integer getExpire()
+        {
+            return expire;
+        }
+
+        public void setExpire(Integer expire)
+        {
+            this.expire = expire;
+        }
+
+        public String getPriKey()
+        {
+            return priKey;
+        }
+
+        public void setPriKey(String priKey)
+        {
+            this.priKey = priKey;
+        }
+
+        public String getPubKey()
+        {
+            return pubKey;
+        }
+
+        public void setPubKey(String pubKey)
+        {
+            this.pubKey = pubKey;
+        }
+    }
+}
+```
+
+
+
+
+
+第二十一步：编写工具类JwtTokenServerUtils
+
+
+
+```java
+package com.example.tools_jwt.server.utils;
+
+import com.example.tools_jwt.entity.JwtUserInfo;
+import com.example.tools_jwt.entity.Token;
+import com.example.tools_jwt.exception.BizException;
+import com.example.tools_jwt.server.config.AuthServerConfigurationProperties;
+import com.example.tools_jwt.utils.JwtHelper;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.server.utils
+ * Class(类名): JwtTokenServerUtils
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/3
+ * Time(创建时间)： 12:58
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+public class JwtTokenServerUtils
+{
+    /**
+     * 认证服务端使用，如 authority-server
+     * 生成和 解析token
+     */
+    private final AuthServerConfigurationProperties authServerConfigurationProperties;
+
+    public JwtTokenServerUtils(AuthServerConfigurationProperties authServerConfigurationProperties)
+    {
+        this.authServerConfigurationProperties = authServerConfigurationProperties;
+    }
+
+
+    /**
+     * 生成token
+     *
+     * @param jwtInfo jwt信息
+     * @param expire  到期时间
+     * @return {@link Token}
+     * @throws BizException 业务异常
+     */
+    public Token generateUserToken(JwtUserInfo jwtInfo, Integer expire) throws BizException
+    {
+        AuthServerConfigurationProperties.TokenInfo userTokenInfo = authServerConfigurationProperties.getUser();
+        if (expire == null || expire <= 0)
+        {
+            expire = userTokenInfo.getExpire();
+        }
+        return JwtHelper.generateUserToken(jwtInfo, userTokenInfo.getPriKey(), expire);
+    }
+
+
+    /**
+     * 解析token
+     *
+     * @param token 令牌
+     * @return {@link JwtUserInfo}
+     * @throws BizException 业务异常
+     */
+    public JwtUserInfo getUserInfo(String token) throws BizException
+    {
+        AuthServerConfigurationProperties.TokenInfo userTokenInfo = authServerConfigurationProperties.getUser();
+        return JwtHelper.getJwtFromToken(token, userTokenInfo.getPubKey());
+    }
+}
+```
+
+
+
+
+
+
+
+第二十二步：编写工具类AuthServerConfiguration
+
+
+
+```java
+package com.example.tools_jwt.server.config;
+
+import com.example.tools_jwt.server.utils.JwtTokenServerUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
+
+/**
+ * Project name(项目名称)：jwt_spring_boot_starter
+ * Package(包名): com.example.tools_jwt.server.config
+ * Class(类名): AuthServerConfiguration
+ * Author(作者）: mao
+ * Author QQ：1296193245
+ * GitHub：https://github.com/maomao124/
+ * Date(创建日期)： 2022/11/3
+ * Time(创建时间)： 13:02
+ * Version(版本): 1.0
+ * Description(描述)： 无
+ */
+
+@EnableConfigurationProperties(AuthServerConfigurationProperties.class)
+public class AuthServerConfiguration
+{
+    @Bean
+    public JwtTokenServerUtils jwtTokenServerUtils(@Autowired AuthServerConfigurationProperties authServerConfigurationProperties)
+    {
+        return new JwtTokenServerUtils(authServerConfigurationProperties);
+    }
+}
+```
+
+
+
+
+
+第二十三步：编写注解EnableAuthServer
+
+
+
+```java
+package com.example.tools_jwt.server;
+
+import com.example.tools_jwt.server.config.AuthServerConfiguration;
+import org.springframework.context.annotation.Import;
+
+import java.lang.annotation.*;
+
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+@Import(AuthServerConfiguration.class)
+public @interface EnableAuthServer
+{
+    
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 使用starter
+
